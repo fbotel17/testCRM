@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\ClientTask;
+use App\Entity\Tache;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ClientTask>
+ * @extends ServiceEntityRepository<Tache>
  */
-class ClientTaskRepository extends ServiceEntityRepository
+class TacheRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ClientTask::class);
+        parent::__construct($registry, Tache::class);
     }
 
     //    /**
-    //     * @return ClientTask[] Returns an array of ClientTask objects
+    //     * @return Tache[] Returns an array of Tache objects
     //     */
     //    public function findByExampleField($value): array
     //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
+    //        return $this->createQueryBuilder('t')
+    //            ->andWhere('t.exampleField = :val')
     //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
+    //            ->orderBy('t.id', 'ASC')
     //            ->setMaxResults(10)
     //            ->getQuery()
     //            ->getResult()
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?ClientTask
+    //    public function findOneBySomeField($value): ?Tache
     //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
+    //        return $this->createQueryBuilder('t')
+    //            ->andWhere('t.exampleField = :val')
     //            ->setParameter('val', $value)
     //            ->getQuery()
     //            ->getOneOrNullResult()

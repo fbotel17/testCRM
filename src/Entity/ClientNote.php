@@ -14,8 +14,9 @@ class ClientNote
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clientNotes')]
+    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'clientNotes')]
     private ?Client $client_id = null;
+
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $contenu = null;

@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Tâches{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">📋 Mes Tâches</h1>
+
+    {% if taches is empty %}
+        <div class="alert alert-warning text-center" role="alert">
+            <strong>Aucune tâche trouvée.</strong><br>
+            Ajoutez votre première tâche pour commencer !
+        </div>
+    {% else %}
+        <div class="row">
+            {% for tache in taches %}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                {{ tache.titre|default('Tâche sans titre') }}
+                            </h5>
+                            <p class="card-text">
+                                <strong>Description :</strong> {{ tache.description|default('Aucune description') }}<br>
+                                <strong>État :</strong> 
+                                {% if tache.etat == 'Terminé' %}
+                                    <span class="badge bg-success">{{ tache.etat }}</span>
+                                {% elseif tache.etat == 'En cours' %}
+                                    <span class="badge bg-warning">{{ tache.etat }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ tache.etat }}</span>
+                                {% endif %}
+                            </p>
+                            <p class="text-muted small">
+                                <strong>Créée le :</strong> {{ tache.dateCreation|date('d/m/Y H:i') }}<br>
+                                <strong>Échéance :</strong> 
+                                {% if tache.dateEcheance %}
+                                    {{ tache.dateEcheance|date('d/m/Y H:i') }}
+                                {% else %}
+                                    <span class="text-danger">Pas de date d'échéance</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

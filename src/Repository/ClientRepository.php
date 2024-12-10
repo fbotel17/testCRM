@@ -16,6 +16,16 @@ class ClientRepository extends ServiceEntityRepository
         parent::__construct($registry, Client::class);
     }
 
+    public function findByUser($user)
+    {
+        return $this->createQueryBuilder('c')
+            ->join('c.user_id', 'u')  // Join la relation user_id (inverse side)
+            ->where('u.id = :userId')  // Vérifie que l'ID de l'utilisateur correspond
+            ->setParameter('userId', $user->getId())  // Paramètre de l'utilisateur connecté
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Client[] Returns an array of Client objects
     //     */

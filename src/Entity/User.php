@@ -46,18 +46,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_derniere_connexion = null;
 
-    #[ORM\ManyToOne(inversedBy: 'user_id')]
+    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'user_id')]
     private ?Client $client = null;
+
 
     /**
      * @var Collection<int, ClientFilters>
      */
-    #[ORM\OneToMany(targetEntity: ClientFilters::class, mappedBy: 'user_id')]
+    #[ORM\OneToMany(targetEntity: ClientFilters::class, mappedBy: 'user')]
     private Collection $clientFilters;
+
+    /**
+     * @var Collection<int, Tache>
+     */
+    #[ORM\OneToMany(targetEntity: Tache::class, mappedBy: 'user')]
+    private Collection $taches;
 
     public function __construct()
     {
         $this->clientFilters = new ArrayCollection();
+        $this->taches = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -219,6 +227,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($clientFilter->getUserId() === $this) {
                 $clientFilter->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Tache>
+     */
+    public function getTaches(): Collection
+    {
+        return $this->taches;
+    }
+
+    public function addTach(Tache $tach): static
+    {
+        if (!$this->taches->contains($tach)) {
+            $this->taches->add($tach);
+            $tach->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTach(Tache $tach): static
+    {
+        if ($this->taches->removeElement($tach)) {
+            // set the owning side to null (unless already changed)
+            if ($tach->getUserId() === $this) {
+                $tach->setUserId(null);
             }
         }
 

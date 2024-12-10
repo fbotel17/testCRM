@@ -46,20 +46,15 @@ class Client
     /**
      * @var Collection<int, ClientNote>
      */
-    #[ORM\OneToMany(targetEntity: ClientNote::class, mappedBy: 'client_id')]
-    private Collection $contenu;
+    #[ORM\OneToMany(targetEntity: ClientNote::class, mappedBy: 'client_id', cascade: ['persist', 'remove'])]
+    private Collection $clientNotes;
 
-    /**
-     * @var Collection<int, ClientTask>
-     */
-    #[ORM\OneToMany(targetEntity: ClientTask::class, mappedBy: 'client_id')]
-    private Collection $clientTasks;
+    
 
     public function __construct()
     {
         $this->user_id = new ArrayCollection();
-        $this->contenu = new ArrayCollection();
-        $this->clientTasks = new ArrayCollection();
+        $this->clientNotes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -184,60 +179,33 @@ class Client
     /**
      * @return Collection<int, ClientNote>
      */
-    public function getContenu(): Collection
+    public function getClientNotes(): Collection
     {
-        return $this->contenu;
+        return $this->clientNotes;
     }
 
-    public function addContenu(ClientNote $contenu): static
+    public function addClientNote(ClientNote $clientNote): static
     {
-        if (!$this->contenu->contains($contenu)) {
-            $this->contenu->add($contenu);
-            $contenu->setClientId($this);
+        if (!$this->clientNotes->contains($clientNote)) {
+            $this->clientNotes->add($clientNote);
+            $clientNote->setClientId($this);
         }
 
         return $this;
     }
 
-    public function removeContenu(ClientNote $contenu): static
+    public function removeClientNote(ClientNote $clientNote): static
     {
-        if ($this->contenu->removeElement($contenu)) {
-            // set the owning side to null (unless already changed)
-            if ($contenu->getClientId() === $this) {
-                $contenu->setClientId(null);
+        if ($this->clientNotes->removeElement($clientNote)) {
+            // Set the owning side to null (unless already changed)
+            if ($clientNote->getClientId() === $this) {
+                $clientNote->setClientId(null);
             }
         }
 
         return $this;
     }
+    
 
-    /**
-     * @return Collection<int, ClientTask>
-     */
-    public function getClientTasks(): Collection
-    {
-        return $this->clientTasks;
-    }
-
-    public function addClientTask(ClientTask $clientTask): static
-    {
-        if (!$this->clientTasks->contains($clientTask)) {
-            $this->clientTasks->add($clientTask);
-            $clientTask->setClientId($this);
-        }
-
-        return $this;
-    }
-
-    public function removeClientTask(ClientTask $clientTask): static
-    {
-        if ($this->clientTasks->removeElement($clientTask)) {
-            // set the owning side to null (unless already changed)
-            if ($clientTask->getClientId() === $this) {
-                $clientTask->setClientId(null);
-            }
-        }
-
-        return $this;
-    }
+    
 }

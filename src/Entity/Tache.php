@@ -2,20 +2,17 @@
 
 namespace App\Entity;
 
-use App\Repository\ClientTaskRepository;
+use App\Repository\TacheRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ClientTaskRepository::class)]
-class ClientTask
+#[ORM\Entity(repositoryClass: TacheRepository::class)]
+class Tache
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-    #[ORM\ManyToOne(inversedBy: 'clientTasks')]
-    private ?Client $client_id = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
@@ -29,21 +26,15 @@ class ClientTask
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date_creation = null;
 
+    #[ORM\ManyToOne(inversedBy: 'taches')]
+    private ?User $user = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $Titre = null;
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getClientId(): ?Client
-    {
-        return $this->client_id;
-    }
-
-    public function setClientId(?Client $client_id): static
-    {
-        $this->client_id = $client_id;
-
-        return $this;
     }
 
     public function getDescription(): ?string
@@ -90,6 +81,30 @@ class ClientTask
     public function setDateCreation(\DateTimeInterface $date_creation): static
     {
         $this->date_creation = $date_creation;
+
+        return $this;
+    }
+
+    public function getUserId(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUserId(?User $user_id): static
+    {
+        $this->user = $user_id;
+
+        return $this;
+    }
+
+    public function getTitre(): ?string
+    {
+        return $this->Titre;
+    }
+
+    public function setTitre(string $Titre): static
+    {
+        $this->Titre = $Titre;
 
         return $this;
     }
