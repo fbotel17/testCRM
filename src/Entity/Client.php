@@ -31,17 +31,11 @@ class Client
     #[ORM\Column(length: 255)]
     private ?string $adresse_societe = null;
 
-    /**
-     * @var Collection<int, User>
-     */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'client')]
-    private Collection $user_id;
+    
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date_creation = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clients')]
-    private ?Company $company = null;
 
     /**
      * @var Collection<int, ClientNote>
@@ -49,12 +43,21 @@ class Client
     #[ORM\OneToMany(targetEntity: ClientNote::class, mappedBy: 'client_id', cascade: ['persist', 'remove'])]
     private Collection $clientNotes;
 
+    #[ORM\ManyToOne(inversedBy: 'clients')]
+    private ?Societe $societe = null;
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'clients')]
+    private Collection $users;
+
     
 
     public function __construct()
     {
-        $this->user_id = new ArrayCollection();
         $this->clientNotes = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -122,35 +125,7 @@ class Client
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUserId(): Collection
-    {
-        return $this->user_id;
-    }
-
-    public function addUserId(User $userId): static
-    {
-        if (!$this->user_id->contains($userId)) {
-            $this->user_id->add($userId);
-            $userId->setClient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUserId(User $userId): static
-    {
-        if ($this->user_id->removeElement($userId)) {
-            // set the owning side to null (unless already changed)
-            if ($userId->getClient() === $this) {
-                $userId->setClient(null);
-            }
-        }
-
-        return $this;
-    }
+    
 
     public function getDateCreation(): ?\DateTimeInterface
     {
@@ -164,17 +139,6 @@ class Client
         return $this;
     }
 
-    public function getCompany(): ?Company
-    {
-        return $this->company;
-    }
-
-    public function setCompany(?Company $company): static
-    {
-        $this->company = $company;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, ClientNote>
@@ -201,6 +165,45 @@ class Client
             if ($clientNote->getClientId() === $this) {
                 $clientNote->setClientId(null);
             }
+        }
+
+        return $this;
+    }
+
+    public function getSociete(): ?Societe
+    {
+        return $this->societe;
+    }
+
+    public function setSociete(?Societe $societe): static
+    {
+        $this->societe = $societe;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->addClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        if ($this->users->removeElement($user)) {
+            $user->removeClient($this);
         }
 
         return $this;

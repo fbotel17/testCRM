@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\CompanyRepository;
+use App\Repository\SocieteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CompanyRepository::class)]
-class Company
+#[ORM\Entity(repositoryClass: SocieteRepository::class)]
+class Societe
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -19,15 +19,12 @@ class Company
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $prenom = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $telephone = null;
+    private ?string $adresse = null;
 
     /**
      * @var Collection<int, Client>
      */
-    #[ORM\OneToMany(targetEntity: Client::class, mappedBy: 'company')]
+    #[ORM\OneToMany(targetEntity: Client::class, mappedBy: 'societe')]
     private Collection $clients;
 
     public function __construct()
@@ -52,26 +49,14 @@ class Company
         return $this;
     }
 
-    public function getPrenom(): ?string
+    public function getAdresse(): ?string
     {
-        return $this->prenom;
+        return $this->adresse;
     }
 
-    public function setPrenom(string $prenom): static
+    public function setAdresse(string $adresse): static
     {
-        $this->prenom = $prenom;
-
-        return $this;
-    }
-
-    public function getTelephone(): ?string
-    {
-        return $this->telephone;
-    }
-
-    public function setTelephone(string $telephone): static
-    {
-        $this->telephone = $telephone;
+        $this->adresse = $adresse;
 
         return $this;
     }
@@ -88,7 +73,7 @@ class Company
     {
         if (!$this->clients->contains($client)) {
             $this->clients->add($client);
-            $client->setCompany($this);
+            $client->setSociete($this);
         }
 
         return $this;
@@ -98,8 +83,8 @@ class Company
     {
         if ($this->clients->removeElement($client)) {
             // set the owning side to null (unless already changed)
-            if ($client->getCompany() === $this) {
-                $client->setCompany(null);
+            if ($client->getSociete() === $this) {
+                $client->setSociete(null);
             }
         }
 

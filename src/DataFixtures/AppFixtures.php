@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\User;
 use App\Entity\Client;
+use App\Entity\Societe;
 use App\Entity\Tache;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -22,63 +23,65 @@ class AppFixtures extends Fixture
     {
         // 1. Créer un utilisateur
         $user = new User();
-        $user->setEmail('admin@example.com');
-        $user->setPrenom('Admin');
-        $user->setNom('Utilisateur');
-        $user->setRoles(['ROLE_ADMIN']);
-        $user->setDateCreation(new \DateTimeImmutable());
-        $user->setDateDerniereConnexion(null);
+        $user->setEmail('admin@example.com')
+            ->setPrenom('Admin')
+            ->setNom('Utilisateur')
+            ->setRoles(['ROLE_ADMIN'])
+            ->setDateCreation(new \DateTimeImmutable())
+            ->setDateDerniereConnexion(null);
 
         // Hasher le mot de passe
-        $hashedPassword = $this->passwordHasher->hashPassword($user, 'password123');
-        $user->setPassword($hashedPassword);
-
+        $user->setPassword($this->passwordHasher->hashPassword($user, 'password123'));
         $manager->persist($user);
 
-        // 2. Créer un client
-        $client = new Client();
-        $client->setNom('Doe');
-        $client->setPrenom('John');
-        $client->setEmail('john.doe@example.com');
-        $client->setTelephone('0123456789');
-        $client->setAdresseSociete('123 Rue Exemple, 75000 Paris');
-        $client->setDateCreation(new \DateTimeImmutable());
-        $client->setCompany(null); // Pas de société associée pour l'exemple
+        // 2. Créer des tâches associées à l'utilisateur
+        $taches = [
+            [
+                'titre' => 'Préparer proposition commerciale pour Amazon.',
+                'description' => 'Ne pas oublier de préparer la proposition commerciale avec Amazon pour établir un plan futur.',
+                'etat' => 'En cours'
+            ],
+            [
+                'titre' => 'Préparer proposition commerciale pour Google.',
+                'description' => 'Ne pas oublier de préparer la proposition commerciale avec Google pour établir un plan futur.',
+                'etat' => 'À faire'
+            ]
+        ];
 
-        // Lier l'utilisateur au client
-        $client->addUserId($user); // Ajoute l'utilisateur à la collection user_id
+        foreach ($taches as $t) {
+            $tache = new Tache();
+            $tache->setTitre($t['titre'])
+                ->setDescription($t['description'])
+                ->setDateCreation(new \DateTimeImmutable())
+                ->setDateEcheance((new \DateTimeImmutable())->modify('+7 days'))
+                ->setEtat($t['etat'])
+                ->setUserId($user); // Associer l'utilisateur
+            $manager->persist($tache);
+        }
 
-        $manager->persist($client);
+        // 3. Créer une société
+        $societe = new Societe();
+        $societe->setNom('UPJV')
+            ->setAdresse('7 rue de la Ville, Saint Quentin');
+        $manager->persist($societe);
 
-        // 3. Créer une tâche pour ce client
-        $tache1 = new Tache();
-        $tache1->setTitre('Préparer proposition commerciale pour amazon.');
-        $tache1->setDescription('Ne pas oublier de préparer la propososition commerciale avec amazon pour établir un plan futur.');
-        $tache1->setDateCreation(new \DateTimeImmutable());
-        $tache1->setDateEcheance((new \DateTimeImmutable())->modify('+7 days'));
-        $tache1->setEtat('En cours'); // Exemple d'état
-        $tache1->setUserId($user); // Associer la tâche au client
+        // 4. Créer 100 clients associés à la société
+        for ($i = 1; $i <= 100; $i++) {
+            $client = new Client();
+            $client->setNom("Client $i")
+                ->setPrenom("Prenom $i")
+                ->setEmail("client$i@example.com")
+                ->setTelephone("0123456789$i") // Numéro unique
+                ->setAdresseSociete("Adresse client $i, 75000 Paris")
+                ->setDateCreation(new \DateTimeImmutable())
+                ->setSociete($societe); // Associer la société
 
-        
+                $client->addUser($user); // Associer l'utilisateur au client (méthode à vérifier dans votre entité)
 
-        $manager->persist($tache1);
+            $manager->persist($client);
+        }
 
-
-        $tache2 = new Tache();
-        $tache2->setTitre('Préparer proposition commerciale pour google.');
-        $tache2->setDescription('Ne pas oublier de préparer la propososition commerciale avec google pour établir un plan futur.');
-        $tache2->setDateCreation(new \DateTimeImmutable());
-        $tache2->setDateEcheance((new \DateTimeImmutable())->modify('+7 days'));
-        $tache2->setEtat('À faire'); // Exemple d'état
-        $tache2->setUserId($user); // Associer la tâche au client
-
-        
-
-        $manager->persist($tache2);
-
-        // 4. Sauvegarder tout dans la base
+        // 5. Sauvegarder tout dans la base
         $manager->flush();
     }
-
 }
-

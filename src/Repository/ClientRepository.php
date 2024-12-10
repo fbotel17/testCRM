@@ -2,9 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Client;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Client>
@@ -16,15 +17,28 @@ class ClientRepository extends ServiceEntityRepository
         parent::__construct($registry, Client::class);
     }
 
-    public function findByUser($user)
+    public function findByUser(User $user)
     {
         return $this->createQueryBuilder('c')
-            ->join('c.user_id', 'u')  // Join la relation user_id (inverse side)
-            ->where('u.id = :userId')  // Vérifie que l'ID de l'utilisateur correspond
-            ->setParameter('userId', $user->getId())  // Paramètre de l'utilisateur connecté
+            ->innerJoin('c.user_id', 'u')  // Joindre la relation user_id
+            ->leftJoin('c.clientNotes', 'cn') // Si vous avez d'autres relations, les inclure ici
+            ->where('u.id = :user_id')
+            ->setParameter('user_id', $user->getId())
             ->getQuery()
             ->getResult();
     }
+
+    public function findClientsByUser(User $user)
+{
+    return $this->createQueryBuilder('c')
+        ->innerJoin('c.users', 'u')
+        ->where('u.id = :userId')
+        ->setParameter('userId', $user->getId())
+        ->getQuery()
+        ->getResult();
+}
+
+
 
     //    /**
     //     * @return Client[] Returns an array of Client objects

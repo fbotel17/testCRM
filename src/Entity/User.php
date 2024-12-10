@@ -48,8 +48,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_derniere_connexion = null;
 
-    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'user_id')]
-    private ?Client $client = null;
+    
 
 
     /**
@@ -64,10 +63,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Tache::class, mappedBy: 'user')]
     private Collection $taches;
 
+    /**
+     * @var Collection<int, Client>
+     */
+    #[ORM\ManyToMany(targetEntity: Client::class, inversedBy: 'users')]
+    private Collection $clients;
+
     public function __construct()
     {
         $this->clientFilters = new ArrayCollection();
         $this->taches = new ArrayCollection();
+        $this->clients = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -193,17 +199,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getClient(): ?Client
-    {
-        return $this->client;
-    }
-
-    public function setClient(?Client $client): static
-    {
-        $this->client = $client;
-
-        return $this;
-    }
+    
 
     /**
      * @return Collection<int, ClientFilters>
@@ -261,6 +257,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $tach->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Client>
+     */
+    public function getClients(): Collection
+    {
+        return $this->clients;
+    }
+
+    public function addClient(Client $client): static
+    {
+        if (!$this->clients->contains($client)) {
+            $this->clients->add($client);
+        }
+
+        return $this;
+    }
+
+    public function removeClient(Client $client): static
+    {
+        $this->clients->removeElement($client);
 
         return $this;
     }
