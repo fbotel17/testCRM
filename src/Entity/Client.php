@@ -28,10 +28,6 @@ class Client
     #[ORM\Column(length: 255)]
     private ?string $telephone = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $adresse_societe = null;
-
-    
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date_creation = null;
@@ -112,19 +108,6 @@ class Client
 
         return $this;
     }
-
-    public function getAdresseSociete(): ?string
-    {
-        return $this->adresse_societe;
-    }
-
-    public function setAdresseSociete(string $adresse_societe): static
-    {
-        $this->adresse_societe = $adresse_societe;
-
-        return $this;
-    }
-
     
 
     public function getDateCreation(): ?\DateTimeInterface

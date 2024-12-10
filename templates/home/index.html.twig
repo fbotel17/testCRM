@@ -3,6 +3,30 @@
 {% block title %}Mon Compte{% endblock %}
 
 {% block body %}
+<style>
+.datalist-custom {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px; /* Limiter la hauteur */
+    overflow-y: auto; /* Ajouter un défilement si trop d'options */
+    background-color: white;
+    border: 1px solid #ccc;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.datalist-option {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.datalist-option:hover {
+    background-color: #f1f1f1;
+}
+</style>
+
 <div class="container my-5">
     <h1 class="text-center mb-4">📋 Mon Compte</h1>
 
@@ -51,16 +75,18 @@
             {% endif %}
         </div>
 
-        <!-- Section Carnet d'adresse avec menu déroulant -->
+        <!-- Section Carnet d'adresse -->
         <div class="col-md-4">
             <h4 class="text-center mb-4">📇 Carnet d'adresse</h4>
+            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addClientModal">+ Ajouter un client</button>
+            
             {% if clients is empty %}
                 <div class="alert alert-info text-center" role="alert">
                     <strong>Aucun client trouvé.</strong><br>
                     Vous n'avez aucun client dans votre carnet d'adresse.
                 </div>
             {% else %}
-                <div class="clients-container" style="max-height: 70vh; overflow-y: auto;">
+                <div class="clients-container" style="max-height: 80vh; overflow-y: auto;">
                     <ul class="list-group">
                         {% for client in clients %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -74,4 +100,74 @@
         </div>
     </div>
 </div>
+
+<!-- Modal pour ajouter un client -->
+<div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addClientModalLabel">Ajouter un client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ path('add_client') }}" method="post" id="addClientForm">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="prenom" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="prenom" name="prenom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="societe" class="form-label">Société</label>
+                        <input type="text" class="form-control" id="societe" name="societe" list="societesList" autocomplete="off">
+                        <datalist id="societesList">
+                            {% for societe in societes %}
+                                <option value="{{ societe.nom }}">{{ societe.nom }}</option>
+                            {% endfor %}
+                        </datalist>
+                        <small id="societeInfo" class="form-text text-muted"></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telephone" class="form-label">Téléphone</label>
+                        <input type="tel" class="form-control" id="telephone" name="telephone" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filtrer les sociétés et afficher les options
+function filterSocietes() {
+    const input = document.getElementById('societe');
+    const listContainer = document.getElementById('societesList');
+    const searchTerm = input.value.toLowerCase();
+    
+    // Effacer les anciennes suggestions
+    listContainer.innerHTML = '';
+
+    // Filtrer les sociétés en fonction de la saisie
+    societes.forEach(function(societe) {
+        if (societe.toLowerCase().includes(searchTerm)) {
+            const option = document.createElement('div');
+            option.classList.add('datalist-option');
+            option.textContent = societe;
+            option.addEventListener('click', function() {
+                input.value = societe;
+                listContainer.innerHTML = ''; // Effacer les suggestions après la sélection
+            });
+            listContainer.appendChild(option);
+        }
+    });
+}
+</script>
 {% endblock %}
