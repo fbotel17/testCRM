@@ -138,4 +138,23 @@ class HomeController extends AbstractController
             'adresse' => $societe->getAdresse(),
         ]);
     }
+
+    #[Route('/client/details/{id}', name: 'client_details', methods: ['GET'])]
+    public function getClientDetails(int $id, ClientRepository $clientRepository): JsonResponse
+    {
+        $client = $clientRepository->find($id);
+
+        if (!$client) {
+            return new JsonResponse(['error' => 'Client introuvable'], 404);
+        }
+
+        return new JsonResponse([
+            'nom' => $client->getNom(),
+            'prenom' => $client->getPrenom(),
+            'email' => $client->getEmail(),
+            'societe' => $client->getSociete() ? $client->getSociete()->getNom() : null,
+            'telephone' => $client->getTelephone(),
+            'adresse_societe' => $client->getSociete() ? $client->getSociete()->getAdresse() : null,
+        ]);
+    }
 }

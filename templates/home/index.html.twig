@@ -26,6 +26,10 @@
 		.datalist-option:hover {
 			background-color: #f1f1f1;
 		}
+
+		.client-name {
+			color: black;
+		}
 	</style>
 
 	<div class="container my-5">
@@ -94,9 +98,10 @@
 						<ul class="list-group">
 							{% for client in clients %}
 								<li class="list-group-item d-flex justify-content-between align-items-center">
-									<span>{{ client.nom }}
-										{{ client.prenom }}</span>
-									<a href="{{ path('app_home', {'id': client.id}) }}" class="btn btn-sm btn-info">Détails</a>
+									<a href="#" class="client-name text-decoration-none" data-bs-toggle="modal" data-bs-target="#clientModal" data-id="{{ client.id }}" data-nom="{{ client.nom }}" data-prenom="{{ client.prenom }}" data-email="{{ client.email }}" data-societe="{{ client.societe.nom }}" data-telephone="{{ client.telephone }}" data-adresse="{{ client.societe.adresse }}">
+										{{ client.nom }}
+										{{ client.prenom }}
+									</a>
 								</li>
 							{% endfor %}
 						</ul>
@@ -150,6 +155,48 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal Detail Client -->
+	<div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="clientModalLabel">Détails du client</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>
+						<strong>Nom :</strong>
+						<span id="modalClientNom"></span>
+					</p>
+					<p>
+						<strong>Prénom :</strong>
+						<span id="modalClientPrenom"></span>
+					</p>
+					<p>
+						<strong>Email :</strong>
+						<span id="modalClientEmail"></span>
+					</p>
+					<p>
+						<strong>Société :</strong>
+						<span id="modalClientSociete"></span>
+					</p>
+					<p>
+						<strong>Téléphone :</strong>
+						<span id="modalClientTelephone"></span>
+					</p>
+					<p>
+						<strong>Adresse Société :</strong>
+						<span id="modalClientAdresse"></span>
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 
 	<!-- Modal pour ajouter une société -->
 	<div class="modal fade" id="addSocieteModal" tabindex="-1" aria-labelledby="addSocieteModalLabel" aria-hidden="true">
@@ -283,5 +330,33 @@ detailsContainer.textContent = '';
 });
 });
 	</script>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+const clientModal = document.getElementById('clientModal');
+
+// Détecte l'ouverture du modal
+clientModal.addEventListener('show.bs.modal', (event) => { // Bouton ou lien déclencheur
+const button = event.relatedTarget;
+
+// Récupérer les données associées au client
+const nom = button.getAttribute('data-nom');
+const prenom = button.getAttribute('data-prenom');
+const email = button.getAttribute('data-email');
+const societe = button.getAttribute('data-societe');
+const telephone = button.getAttribute('data-telephone');
+const adresse = button.getAttribute('data-adresse');
+
+// Injecter les données dans le modal
+document.getElementById('modalClientNom').textContent = nom;
+document.getElementById('modalClientPrenom').textContent = prenom;
+document.getElementById('modalClientEmail').textContent = email;
+document.getElementById('modalClientSociete').textContent = societe;
+document.getElementById('modalClientTelephone').textContent = telephone;
+document.getElementById('modalClientAdresse').textContent = adresse;
+});
+});
+	</script>
+
 
 {% endblock %}
