@@ -1,173 +1,251 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon Compte{% endblock %}
+{% block title %}Mon Compte
+{% endblock %}
 
 {% block body %}
-<style>
-.datalist-custom {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    max-height: 200px; /* Limiter la hauteur */
-    overflow-y: auto; /* Ajouter un défilement si trop d'options */
-    background-color: white;
-    border: 1px solid #ccc;
-    z-index: 1000;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	<style>
+		.datalist-custom {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			max-height: 200px; /* Limiter la hauteur */
+			overflow-y: auto; /* Ajouter un défilement si trop d'options */
+			background-color: white;
+			border: 1px solid #ccc;
+			z-index: 1000;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		}
+
+		.datalist-option {
+			padding: 8px;
+			cursor: pointer;
+		}
+
+		.datalist-option:hover {
+			background-color: #f1f1f1;
+		}
+	</style>
+
+	<div class="container my-5">
+		<h1 class="text-center mb-4">📋 Mon Compte</h1>
+
+		<div
+			class="row">
+			<!-- Section Tâches -->
+			<div class="col-md-8">
+				{% if taches is empty %}
+					<div class="alert alert-warning text-center" role="alert">
+						<strong>Aucune tâche trouvée.</strong><br>
+						Vous n'avez aucune tâche à faire pour le moment
+					</div>
+				{% else %}
+					<div class="row">
+						{% for tache in taches %}
+							<div class="col-md-6 mb-4">
+								<div class="card shadow-sm border-0">
+									<div class="card-body">
+										<h5 class="card-title text-primary">
+											{{ tache.titre|default('Tâche sans titre') }}
+										</h5>
+										<p class="card-text">
+											<strong>Description :</strong>
+											{{ tache.description|default('Aucune description') }}<br>
+											<strong>État :</strong>
+											{% if tache.etat == 'Terminé' %}
+												<span class="badge bg-success">{{ tache.etat }}</span>
+											{% elseif tache.etat == 'En cours' %}
+												<span class="badge bg-warning">{{ tache.etat }}</span>
+											{% else %}
+												<span class="badge bg-secondary">{{ tache.etat }}</span>
+											{% endif %}
+										</p>
+										<p class="text-muted small">
+											<strong>Créée le :</strong>
+											{{ tache.dateCreation|date('d/m/Y H:i') }}<br>
+											<strong>Échéance :</strong>
+											{% if tache.dateEcheance %}
+												{{ tache.dateEcheance|date('d/m/Y H:i') }}
+											{% else %}
+												<span class="text-danger">Pas de date d'échéance</span>
+											{% endif %}
+										</p>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+
+			<!-- Section Carnet d'adresse -->
+			<div class="col-md-4">
+				<h4 class="text-center mb-4">📇 Carnet d'adresse</h4>
+				<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addClientModal">+ Ajouter un client</button>
+
+				{% if clients is empty %}
+					<div class="alert alert-info text-center" role="alert">
+						<strong>Aucun client trouvé.</strong><br>
+						Vous n'avez aucun client dans votre carnet d'adresse.
+					</div>
+				{% else %}
+					<div class="clients-container" style="max-height: 80vh; overflow-y: auto;">
+						<ul class="list-group">
+							{% for client in clients %}
+								<li class="list-group-item d-flex justify-content-between align-items-center">
+									<span>{{ client.nom }}
+										{{ client.prenom }}</span>
+									<a href="{{ path('app_home', {'id': client.id}) }}" class="btn btn-sm btn-info">Détails</a>
+								</li>
+							{% endfor %}
+						</ul>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal pour ajouter un client -->
+	<div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="addClientModalLabel">Ajouter un client</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form action="{{ path('add_client') }}" method="post" id="addClientForm">
+						<div class="mb-3">
+							<label for="nom" class="form-label">Nom</label>
+							<input type="text" class="form-control" id="nom" name="nom" required>
+						</div>
+						<div class="mb-3">
+							<label for="prenom" class="form-label">Prénom</label>
+							<input type="text" class="form-control" id="prenom" name="prenom" required>
+						</div>
+						<div class="mb-3">
+							<label for="email" class="form-label">Email</label>
+							<input type="email" class="form-control" id="email" name="email" required>
+						</div>
+						<div class="mb-3">
+							<label for="societe" class="form-label">Société</label>
+							<input type="text" class="form-control" id="societe" name="societe" list="societesList" autocomplete="off">
+							<datalist id="societesList">
+								{% for societe in societes %}
+									<option value="{{ societe.nom }}">{{ societe.nom }}</option>
+								{% endfor %}
+							</datalist>
+							<small id="societeInfo" class="form-text text-muted"></small>
+						</div>
+
+						<div class="mb-3">
+							<label for="telephone" class="form-label">Téléphone</label>
+							<input type="tel" class="form-control" id="telephone" name="telephone" required>
+						</div>
+						<button type="submit" class="btn btn-primary">Ajouter</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal pour ajouter une société -->
+	<div class="modal fade" id="addSocieteModal" tabindex="-1" aria-labelledby="addSocieteModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="addSocieteModalLabel">Ajouter une société</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="addSocieteForm">
+						<div class="mb-3">
+							<label for="nomSociete" class="form-label">Nom</label>
+							<input type="text" class="form-control" id="nomSociete" name="nom" required>
+						</div>
+						<div class="mb-3">
+							<label for="adresseSociete" class="form-label">Adresse</label>
+							<input type="text" class="form-control" id="adresseSociete" name="adresse" required>
+						</div>
+						<button type="button" class="btn btn-primary" id="createSocieteBtn">Créer Société</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		document.getElementById('addClientForm').addEventListener('submit', function (e) {
+e.preventDefault();
+
+const societe = document.getElementById('societe').value;
+
+// Vérifier si la société existe
+const societesExistantes = [...document.querySelectorAll('#societesList option')].map(opt => opt.value);
+
+if (! societesExistantes.includes(societe)) { // Ouvrir le modal pour ajouter la société
+const societeModal = new bootstrap.Modal(document.getElementById('addSocieteModal'));
+societeModal.show();
+
+// Pré-remplir le champ du nom de la société
+document.getElementById('nomSociete').value = societe;
+} else { // Soumettre directement le formulaire si la société existe
+this.submit();
 }
+});
 
-.datalist-option {
-    padding: 8px;
-    cursor: pointer;
+// Gestion de la création de société
+document.getElementById('createSocieteBtn').addEventListener('click', function () {
+const formData = new FormData(document.getElementById('addSocieteForm'));
+
+fetch('{{ path('add_societe') }}', {
+method: 'POST',
+body: formData
+}).then(response => response.json()).then(data => {
+if (data.id) {
+alert('Société créée avec succès');
+document.getElementById('addSocieteModal').classList.remove('show');
+document.querySelector('.modal-backdrop').remove();
+
+// Ajouter la société à la datalist
+const newOption = document.createElement('option');
+newOption.value = formData.get('nom');
+document.getElementById('societesList').appendChild(newOption);
+
+// Soumettre le formulaire client après création de la société
+document.getElementById('addClientForm').submit();
+} else {
+alert('Erreur : ' + data.message);
 }
+}).catch(error => console.error('Erreur lors de la création de la société', error));
+});
+	</script>
 
-.datalist-option:hover {
-    background-color: #f1f1f1;
-}
-</style>
 
-<div class="container my-5">
-    <h1 class="text-center mb-4">📋 Mon Compte</h1>
-
-    <div class="row">
-        <!-- Section Tâches -->
-        <div class="col-md-8">
-            {% if taches is empty %}
-                <div class="alert alert-warning text-center" role="alert">
-                    <strong>Aucune tâche trouvée.</strong><br>
-                    Vous n'avez aucune tâche à faire pour le moment
-                </div>
-            {% else %}
-                <div class="row">
-                    {% for tache in taches %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-body">
-                                    <h5 class="card-title text-primary">
-                                        {{ tache.titre|default('Tâche sans titre') }}
-                                    </h5>
-                                    <p class="card-text">
-                                        <strong>Description :</strong> {{ tache.description|default('Aucune description') }}<br>
-                                        <strong>État :</strong> 
-                                        {% if tache.etat == 'Terminé' %}
-                                            <span class="badge bg-success">{{ tache.etat }}</span>
-                                        {% elseif tache.etat == 'En cours' %}
-                                            <span class="badge bg-warning">{{ tache.etat }}</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">{{ tache.etat }}</span>
-                                        {% endif %}
-                                    </p>
-                                    <p class="text-muted small">
-                                        <strong>Créée le :</strong> {{ tache.dateCreation|date('d/m/Y H:i') }}<br>
-                                        <strong>Échéance :</strong> 
-                                        {% if tache.dateEcheance %}
-                                            {{ tache.dateEcheance|date('d/m/Y H:i') }}
-                                        {% else %}
-                                            <span class="text-danger">Pas de date d'échéance</span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- Section Carnet d'adresse -->
-        <div class="col-md-4">
-            <h4 class="text-center mb-4">📇 Carnet d'adresse</h4>
-            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addClientModal">+ Ajouter un client</button>
-            
-            {% if clients is empty %}
-                <div class="alert alert-info text-center" role="alert">
-                    <strong>Aucun client trouvé.</strong><br>
-                    Vous n'avez aucun client dans votre carnet d'adresse.
-                </div>
-            {% else %}
-                <div class="clients-container" style="max-height: 80vh; overflow-y: auto;">
-                    <ul class="list-group">
-                        {% for client in clients %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ client.nom }} {{ client.prenom }}</span>
-                                <a href="{{ path('app_home', {'id': client.id}) }}" class="btn btn-sm btn-info">Détails</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Modal pour ajouter un client -->
-<div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addClientModalLabel">Ajouter un client</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="{{ path('add_client') }}" method="post" id="addClientForm">
-                    <div class="mb-3">
-                        <label for="nom" class="form-label">Nom</label>
-                        <input type="text" class="form-control" id="nom" name="nom" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="prenom" class="form-label">Prénom</label>
-                        <input type="text" class="form-control" id="prenom" name="prenom" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="societe" class="form-label">Société</label>
-                        <input type="text" class="form-control" id="societe" name="societe" list="societesList" autocomplete="off">
-                        <datalist id="societesList">
-                            {% for societe in societes %}
-                                <option value="{{ societe.nom }}">{{ societe.nom }}</option>
-                            {% endfor %}
-                        </datalist>
-                        <small id="societeInfo" class="form-text text-muted"></small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="telephone" class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" id="telephone" name="telephone" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// Filtrer les sociétés et afficher les options
+	<script>
+		// Filtrer les sociétés et afficher les options
 function filterSocietes() {
-    const input = document.getElementById('societe');
-    const listContainer = document.getElementById('societesList');
-    const searchTerm = input.value.toLowerCase();
-    
-    // Effacer les anciennes suggestions
-    listContainer.innerHTML = '';
+const input = document.getElementById('societe');
+const listContainer = document.getElementById('societesList');
+const searchTerm = input.value.toLowerCase();
 
-    // Filtrer les sociétés en fonction de la saisie
-    societes.forEach(function(societe) {
-        if (societe.toLowerCase().includes(searchTerm)) {
-            const option = document.createElement('div');
-            option.classList.add('datalist-option');
-            option.textContent = societe;
-            option.addEventListener('click', function() {
-                input.value = societe;
-                listContainer.innerHTML = ''; // Effacer les suggestions après la sélection
-            });
-            listContainer.appendChild(option);
-        }
-    });
+// Effacer les anciennes suggestions
+listContainer.innerHTML = '';
+
+// Filtrer les sociétés en fonction de la saisie
+societes.forEach(function (societe) {
+if (societe.toLowerCase().includes(searchTerm)) {
+const option = document.createElement('div');
+option.classList.add('datalist-option');
+option.textContent = societe;
+option.addEventListener('click', function () {
+input.value = societe;
+listContainer.innerHTML = ''; // Effacer les suggestions après la sélection
+});
+listContainer.appendChild(option);
 }
-</script>
+});
+}
+	</script>
 {% endblock %}

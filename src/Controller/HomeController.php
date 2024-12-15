@@ -52,70 +52,68 @@ class HomeController extends AbstractController
     }
 
     #[Route('/add_client', name: 'add_client', methods: ['POST'])]
-public function addClient(Request $request, EntityManagerInterface $em, SocieteRepository $societeRepository)
-{
-    // Récupérer les données envoyées dans la requête
-    $nom = $request->get('nom');
-    $prenom = $request->get('prenom');
-    $email = $request->get('email');
-    $societeName = $request->get('societe');
-    $telephone = $request->get('telephone');
-    $adresse = $request->get('adresse'); // Nouvelle donnée pour l'adresse de la société
-
-    // Vérifier si la société existe
-    $societe = $societeRepository->findOneBy(['nom' => $societeName]);
-
-    if (!$societe) {
-        // Si la société n'existe pas, la créer avec l'adresse
-        $societe = new Societe();
-        $societe->setNom($societeName);
-        $societe->setAdresse($adresse); // Ajouter l'adresse à la société
-        $em->persist($societe);
-        $em->flush(); // Sauvegarder la société dans la base de données
-    }
-
-    // Ajouter un nouveau client et l'associer à la société
-    $client = new Client();
-    $client->setNom($nom)
-           ->setPrenom($prenom)
-           ->setEmail($email)
-           ->setTelephone($telephone)
-           ->setDateCreation(new \DateTime())
-           ->setSociete($societe);  // Lier le client à la société existante ou nouvellement créée
-
-    // Associer le client à l'utilisateur connecté
-    $user = $this->getUser(); // Récupérer l'utilisateur connecté
-    if ($user) {
-        $client->addUser($user); // Associer le client à l'utilisateur
-    }
-
-    $em->persist($client);
-    $em->flush(); // Sauvegarder le client dans la base de données
-
-    // Retourner une réponse (ici, une redirection vers la page d'accueil ou une autre page)
-    return $this->redirectToRoute('app_home');  // Redirige vers la page d'accueil ou la page des clients
-}
-
-
-    #[Route('/api/create-societe', name: 'create_societe', methods: ['POST'])]
-    public function createSociete(Request $request, EntityManagerInterface $em): JsonResponse
+    public function addClient(Request $request, EntityManagerInterface $em, SocieteRepository $societeRepository)
     {
-        $data = json_decode($request->getContent(), true);
-        $societeName = $data['name'];
-        $adresse = $data['adresse'];
+        // Récupérer les données envoyées dans la requête
+        $nom = $request->get('nom');
+        $prenom = $request->get('prenom');
+        $email = $request->get('email');
+        $societeName = $request->get('societe');
+        $telephone = $request->get('telephone');
+        $adresse = $request->get('adresse'); // Nouvelle donnée pour l'adresse de la société
 
-        // Créer une nouvelle société
+        // Vérifier si la société existe
+        $societe = $societeRepository->findOneBy(['nom' => $societeName]);
+
+        if (!$societe) {
+            // Si la société n'existe pas, la créer avec l'adresse
+            $societe = new Societe();
+            $societe->setNom($societeName);
+            $societe->setAdresse($adresse); // Ajouter l'adresse à la société
+            $em->persist($societe);
+            $em->flush(); // Sauvegarder la société dans la base de données
+        }
+
+        // Ajouter un nouveau client et l'associer à la société
+        $client = new Client();
+        $client->setNom($nom)
+            ->setPrenom($prenom)
+            ->setEmail($email)
+            ->setTelephone($telephone)
+            ->setDateCreation(new \DateTime())
+            ->setSociete($societe);  // Lier le client à la société existante ou nouvellement créée
+
+        // Associer le client à l'utilisateur connecté
+        $user = $this->getUser(); // Récupérer l'utilisateur connecté
+        if ($user) {
+            $client->addUser($user); // Associer le client à l'utilisateur
+        }
+
+        $em->persist($client);
+        $em->flush(); // Sauvegarder le client dans la base de données
+
+        // Retourner une réponse (ici, une redirection vers la page d'accueil ou une autre page)
+        return $this->redirectToRoute('app_home');  // Redirige vers la page d'accueil ou la page des clients
+    }
+
+
+    #[Route('/add_societe', name: 'add_societe', methods: ['POST'])]
+    public function addSociete(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $nom = $request->get('nom');
+        $adresse = $request->get('adresse');
+
+        if (!$nom || !$adresse) {
+            return new JsonResponse(['message' => 'Nom et adresse requis'], 400);
+        }
+
         $societe = new Societe();
-        $societe->setNom($societeName);
-        $societe->setAdresse($adresse);
+        $societe->setNom($nom)
+            ->setAdresse($adresse);
 
-        // Sauvegarder dans la base de données
         $em->persist($societe);
         $em->flush();
 
-        // Répondre avec un message de succès
-        return new JsonResponse(['success' => true]);
+        return new JsonResponse(['id' => $societe->getId(), 'message' => 'Société créée avec succès'], 201);
     }
 }
-
-

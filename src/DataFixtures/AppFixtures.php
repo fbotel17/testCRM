@@ -72,11 +72,10 @@ class AppFixtures extends Fixture
                 ->setPrenom("Prenom $i")
                 ->setEmail("client$i@example.com")
                 ->setTelephone("0123456789$i") // Numéro unique
-                ->setAdresseSociete("Adresse client $i, 75000 Paris")
                 ->setDateCreation(new \DateTimeImmutable())
                 ->setSociete($societe); // Associer la société
 
-                $client->addUser($user); // Associer l'utilisateur au client (méthode à vérifier dans votre entité)
+            $client->addUser($user); // Associer l'utilisateur au client (méthode à vérifier dans votre entité)
 
             $manager->persist($client);
         }
