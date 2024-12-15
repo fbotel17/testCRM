@@ -116,4 +116,26 @@ class HomeController extends AbstractController
 
         return new JsonResponse(['id' => $societe->getId(), 'message' => 'Société créée avec succès'], 201);
     }
+
+    #[Route('/societe/details', name: 'societe_details', methods: ['GET'])]
+    public function getSocieteDetails(Request $request, SocieteRepository $societeRepository): JsonResponse
+    {
+        $nom = $request->query->get('nom');
+
+        // Vérifier si le nom est fourni
+        if (!$nom) {
+            return new JsonResponse(['error' => 'Nom de la société non fourni'], 400);
+        }
+
+        $societe = $societeRepository->findOneBy(['nom' => $nom]);
+
+        if (!$societe) {
+            return new JsonResponse(['error' => 'Société introuvable'], 404);
+        }
+
+        return new JsonResponse([
+            'nom' => $societe->getNom(),
+            'adresse' => $societe->getAdresse(),
+        ]);
+    }
 }

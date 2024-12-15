@@ -136,8 +136,9 @@
 									<option value="{{ societe.nom }}">{{ societe.nom }}</option>
 								{% endfor %}
 							</datalist>
-							<small id="societeInfo" class="form-text text-muted"></small>
+							<div id="societeDetails" class="text-muted mt-2" style="display: none;"></div>
 						</div>
+
 
 						<div class="mb-3">
 							<label for="telephone" class="form-label">Téléphone</label>
@@ -248,4 +249,39 @@ listContainer.appendChild(option);
 });
 }
 	</script>
+
+	<script>
+		document.getElementById('societe').addEventListener('input', function () {
+const societeName = this.value;
+const detailsContainer = document.getElementById('societeDetails');
+
+if (societeName.trim() === '') {
+detailsContainer.style.display = 'none';
+detailsContainer.textContent = '';
+return;
+}
+
+// Effectuer une requête Ajax pour récupérer les détails de la société
+fetch (`/societe/details?nom=${
+encodeURIComponent(societeName)
+}`).then(response => response.json()).then(data => {
+if (data.error) {
+detailsContainer.style.display = 'none';
+detailsContainer.textContent = '';
+} else {
+detailsContainer.style.display = 'block';
+detailsContainer.textContent = `Nom : ${
+data.nom
+}, Adresse : ${
+data.adresse
+}`;
+}
+}).catch(error => {
+console.error('Erreur lors de la récupération des détails de la société :', error);
+detailsContainer.style.display = 'none';
+detailsContainer.textContent = '';
+});
+});
+	</script>
+
 {% endblock %}
