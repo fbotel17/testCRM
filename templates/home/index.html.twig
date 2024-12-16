@@ -98,15 +98,23 @@
 						<ul class="list-group">
 							{% for client in clients %}
 								<li class="list-group-item d-flex justify-content-between align-items-center">
-									<a href="#" class="client-name text-decoration-none" data-bs-toggle="modal" data-bs-target="#clientModal" data-id="{{ client.id }}" data-nom="{{ client.nom }}" data-prenom="{{ client.prenom }}" data-email="{{ client.email }}" data-societe="{{ client.societe.nom }}" data-telephone="{{ client.telephone }}" data-adresse="{{ client.societe.adresse }}">
-										{{ client.nom }}
-										{{ client.prenom }}
+									<!-- Lien pour afficher les détails du client dans le modal -->
+									<a href="#" class="client-name text-decoration-none" data-bs-toggle="modal" data-bs-target="#clientModal"
+									data-id="{{ client.id }}"
+									data-nom="{{ client.nom }}"
+									data-prenom="{{ client.prenom }}"
+									data-email="{{ client.email }}"
+									data-societe="{{ client.societe.nom }}"
+									data-telephone="{{ client.telephone }}"
+									data-adresse="{{ client.societe.adresse }}">
+										{{ client.nom }} {{ client.prenom }}
 									</a>
 								</li>
 							{% endfor %}
 						</ul>
 					</div>
 				{% endif %}
+
 			</div>
 		</div>
 	</div>
@@ -163,6 +171,9 @@
 				<div class="modal-header">
 					<h5 class="modal-title" id="clientModalLabel">Détails du client</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					<button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#editClientModal" id="editClientBtn">
+						<i class="bi bi-pencil"></i> Modifier
+					</button>
 				</div>
 				<div class="modal-body">
 					<p>
@@ -197,6 +208,46 @@
 		</div>
 	</div>
 
+	<!-- Modal pour modifier un client -->
+	{% for client in clients %}
+<div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editClientModalLabel">Modifier un client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ path('edit_client', {'id': client.id}) }}" method="post" id="editClientForm">
+                    <input type="hidden" name="id" id="clientId">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="editNom" name="nom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="prenom" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="editPrenom" name="prenom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="societe" class="form-label">Société</label>
+                        <input type="text" class="form-control" id="editSociete" name="societe" list="societesList" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label for="telephone" class="form-label">Téléphone</label>
+                        <input type="tel" class="form-control" id="editTelephone" name="telephone" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
 
 	<!-- Modal pour ajouter une société -->
 	<div class="modal fade" id="addSocieteModal" tabindex="-1" aria-labelledby="addSocieteModalLabel" aria-hidden="true">
@@ -222,6 +273,35 @@
 			</div>
 		</div>
 	</div>
+
+	
+
+<!-- Modal pour ajouter une société lors de la modif d'un client -->
+<div class="modal fade" id="addSocieteModal" tabindex="-1" aria-labelledby="addSocieteModalLabel" aria-hidden="true" style="z-index: 1056;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSocieteModalLabel">Ajouter une société</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSocieteForm">
+                    <div class="mb-3">
+                        <label for="nomSociete" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="nomSociete" name="nom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adresseSociete" class="form-label">Adresse</label>
+                        <input type="text" class="form-control" id="adresseSociete" name="adresse" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="createSocieteBtn">Créer Société</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 	<script>
 		document.getElementById('addClientForm').addEventListener('submit', function (e) {
@@ -357,6 +437,135 @@ document.getElementById('modalClientAdresse').textContent = adresse;
 });
 });
 	</script>
+
+	<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Écoutez l'événement sur tous les liens qui ouvrent le modal
+    const clientLinks = document.querySelectorAll('.client-name');
+    clientLinks.forEach(link => {
+        link.addEventListener('click', function(event) {
+            // Empêcher le comportement par défaut (le lien)
+            event.preventDefault();
+            
+            // Récupérer les données du client depuis les attributs 'data-'
+            const clientId = link.getAttribute('data-id');
+            const clientNom = link.getAttribute('data-nom');
+            const clientPrenom = link.getAttribute('data-prenom');
+            const clientEmail = link.getAttribute('data-email');
+            const clientSociete = link.getAttribute('data-societe');
+            const clientTelephone = link.getAttribute('data-telephone');
+            const clientAdresse = link.getAttribute('data-adresse');
+            
+            // Injecter les données dans les champs du modal
+            document.getElementById('modalClientNom').textContent = clientNom;
+            document.getElementById('modalClientPrenom').textContent = clientPrenom;
+            document.getElementById('modalClientEmail').textContent = clientEmail;
+            document.getElementById('modalClientSociete').textContent = clientSociete;
+            document.getElementById('modalClientTelephone').textContent = clientTelephone;
+            document.getElementById('modalClientAdresse').textContent = clientAdresse;
+
+            // Si vous avez un formulaire de modification dans le modal, vous pouvez aussi définir les valeurs des champs de saisie :
+            document.getElementById('clientId').value = clientId;
+            document.getElementById('editNom').value = clientNom;
+            document.getElementById('editPrenom').value = clientPrenom;
+            document.getElementById('editEmail').value = clientEmail;
+            document.getElementById('editSociete').value = clientSociete;
+            document.getElementById('editTelephone').value = clientTelephone;
+        });
+    });
+});
+
+</script>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Écoutez l'événement sur tous les liens qui ouvrent le modal
+    const clientLinks = document.querySelectorAll('.client-name');
+    clientLinks.forEach(link => {
+        link.addEventListener('click', function(event) {
+            // Empêcher le comportement par défaut (le lien)
+            event.preventDefault();
+
+            // Récupérer les données du client depuis les attributs 'data-'
+            const clientId = link.getAttribute('data-id');
+            const clientNom = link.getAttribute('data-nom');
+            const clientPrenom = link.getAttribute('data-prenom');
+            const clientEmail = link.getAttribute('data-email');
+            const clientSociete = link.getAttribute('data-societe');
+            const clientTelephone = link.getAttribute('data-telephone');
+            const clientAdresse = link.getAttribute('data-adresse');
+
+            // Injecter les données dans les champs du modal
+            document.getElementById('modalClientNom').textContent = clientNom;
+            document.getElementById('modalClientPrenom').textContent = clientPrenom;
+            document.getElementById('modalClientEmail').textContent = clientEmail;
+            document.getElementById('modalClientSociete').textContent = clientSociete;
+            document.getElementById('modalClientTelephone').textContent = clientTelephone;
+            document.getElementById('modalClientAdresse').textContent = clientAdresse;
+
+            // Si vous avez un formulaire de modification dans le modal, vous pouvez aussi définir les valeurs des champs de saisie :
+            document.getElementById('clientId').value = clientId;
+            document.getElementById('editNom').value = clientNom;
+            document.getElementById('editPrenom').value = clientPrenom;
+            document.getElementById('editEmail').value = clientEmail;
+            document.getElementById('editSociete').value = clientSociete;
+            document.getElementById('editTelephone').value = clientTelephone;
+        });
+    });
+
+    // Gestion de la soumission du formulaire de modification du client
+    document.getElementById('editClientForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const societe = document.getElementById('editSociete').value;
+
+        // Vérifier si la société existe
+        const societesExistantes = [...document.querySelectorAll('#societesList option')].map(opt => opt.value);
+
+        if (!societesExistantes.includes(societe)) {
+            // Ouvrir le modal pour ajouter la société
+            const societeModal = new bootstrap.Modal(document.getElementById('addSocieteModal'));
+            societeModal.show();
+
+            // Pré-remplir le champ du nom de la société
+            document.getElementById('nomSociete').value = societe;
+        } else {
+            // Soumettre directement le formulaire si la société existe
+            this.submit();
+        }
+    });
+
+    // Gestion de la création de société
+    document.getElementById('createSocieteBtn').addEventListener('click', function() {
+        const formData = new FormData(document.getElementById('addSocieteForm'));
+
+        fetch('{{ path('add_societe') }}', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json()).then(data => {
+            if (data.id) {
+                alert('Société créée avec succès');
+                document.getElementById('addSocieteModal').classList.remove('show');
+                document.querySelector('.modal-backdrop').remove();
+
+                // Ajouter la société à la datalist
+                const newOption = document.createElement('option');
+                newOption.value = formData.get('nom');
+                document.getElementById('societesList').appendChild(newOption);
+
+                // Soumettre le formulaire client après création de la société
+                document.getElementById('editClientForm').submit();
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        }).catch(error => console.error('Erreur lors de la création de la société', error));
+    });
+});
+
+</script>
+
+
 
 
 {% endblock %}

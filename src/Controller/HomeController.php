@@ -157,4 +157,52 @@ class HomeController extends AbstractController
             'adresse_societe' => $client->getSociete() ? $client->getSociete()->getAdresse() : null,
         ]);
     }
+
+    #[Route('/client/edit/{id}', name: 'edit_client', methods: ['POST'])]
+    public function editClient(Request $request, ManagerRegistry $doctrine, SocieteRepository $societeRepository, EntityManagerInterface $em): Response
+    {
+        $clientId = $request->request->get('id');
+        $clientNom = $request->request->get('nom');
+        $clientPrenom = $request->request->get('prenom');
+        $clientEmail = $request->request->get('email');
+        $clientSociete = $request->request->get('societe');
+        $clientTelephone = $request->request->get('telephone');
+        $adresse = $request->get('adresse'); // Nouvelle donnée pour l'adresse de la société
+
+        
+
+        $societe = $societeRepository->findOneBy(['nom' => $clientSociete]);
+
+        if (!$societe) {
+            // Si la société n'existe pas, la créer avec l'adresse
+            $societe = new Societe();
+            $societe->setNom($clientSociete);
+            $societe->setAdresse($adresse); // Ajouter l'adresse à la société
+            $em->persist($societe);
+            $em->flush(); // Sauvegarder la société dans la base de données
+        }
+
+
+        $client = $doctrine->getRepository(Client::class)->find($clientId);
+        if ($client) {
+            $client->setNom($clientNom);
+            $client->setPrenom($clientPrenom);
+            $client->setEmail($clientEmail);
+            $client->setSociete($societe);
+            $client->setTelephone($clientTelephone);
+
+            $entityManager = $doctrine->getManager();
+            $entityManager->flush();
+
+            // Rediriger vers une page de confirmation ou la liste des clients
+            return $this->redirectToRoute('app_home');
+        }
+
+        throw $this->createNotFoundException('Client non trouvé.');
+    }
+
+
+
 }
+
+
